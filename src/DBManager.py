@@ -1,45 +1,54 @@
-from config import config
-import psycopg2
-
-
 class DBManager:
-    def __init__(self, params, name):
-        self.params = params
-        self.name: str = name
-
-    def create_database(self):
-        conn = psycopg2.connect(dbname='postgres', **self.params)
-        conn.autocommit = True
-        cur = conn.cursor()
-
-        cur.execute(f'DROP DATABASE {self.name}')
-        cur.execute(f'CREATE DATABASE {self.name}')
-
-        cur.close()
-        conn.close()
-
-    def create_table(self, cur):
-        cur.execute(f'CREATE TABLE {self.name}('
-                    f'vacancy_id serial PRIMARY KEY,'
-                    f'vacancy_name text,'
-                    f'description text,'
-                    f'salary_from int,'
-                    f'salary_to int,'
-                    f'currency text,'
-                    f'alternative_url text'
-                    f')')
+    def __init__(self, cur):
+        self.cur = cur
 
     def get_companies_and_vacancies_count(self):
-        pass
+        """
+        Получает список всех компаний и количество вакансий у каждой компании.
+        """
+        self.cur.execute('SELECT companies.company_name, COUNT(vacancies.vacancy_id) '
+                         'FROM companies '
+                         'LEFT JOIN vacancies ON companies.company_name = vacancies.company_name '
+                         'GROUP BY companies.company_name'
+                         )
+        answer = self.cur.fetchall()
+
+        return answer
 
     def get_all_vacancies(self):
-        pass
+        """
+        Получает список всех вакансий с указанием названия компании, названия вакансии
+                    и зарплаты и ссылки на вакансию.
+        """
+        self.cur.execute('SELECT * from vacancies')
+        answer = self.cur.fetchall()
+
+        return answer
 
     def get_avg_salary(self):
-        pass
+        """
+        Получает среднюю зарплату по вакансиям.
+        """
+        self.cur.execute('SELECT AVG(salary) from vacancies')
+        answer = self.cur.fetchall()
+
+        return answer
 
     def get_vacancies_with_higher_salary(self):
-        pass
+        """
+        Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям.
+        """
+        self.cur.execute('SELECT vacancy_name from vacancies WHERE salary > '
+                         '(SELECT AVG(salary) from vacancies)')
+        answer = self.cur.fetchall()
 
-    def get_vacancies_with_keyword(self):
-        pass
+        return answer
+
+    def get_vacancies_with_keyword(self, string):
+        """
+        Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например python.
+        """
+        self.cur.execute(f"SELECT * FROM vacancies WHERE vacancy_name LIKE '%{string}%'")
+        answer = self.cur.fetchall()
+
+        return answer

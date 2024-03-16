@@ -1,60 +1,39 @@
 from src.hhapi import HeadHunterAPI
-from src.DBManager import DBManager
-from src.config import config
-import psycopg2
+from src.sql_config import config
+from src.DB_setup import DatabaseSetUp
+from src.utils import start_user_interaction, user_interaction
+
+employers_dict = {'Яндекс': '1740',
+                  'epam': '29740',
+                  'Sber': '3529',
+                  'Whoosh': '3536822',
+                  'Банк ВТБ (ПАО)': '1440683',
+                  'RuTube': '78638',
+                  'Cian': '1429999',
+                  'RosNeft': '6596',
+                  'Gazprom': '2159482',
+                  'SeverStal': '6041'}
+params = config()
 
 
-db_list = ('epam', 'Tinkoff', 'Sber', 'Whoosh', 'SkyPro', 'RuTube', 'Циан', 'Роснефть', 'Газпром', 'Северсталь')
+def sql_setup():
+    api_connect = HeadHunterAPI(employers_dict)
+    vacancies = api_connect.get_vacancies()
 
-user_input = int(input(f'Выберите ДБ из списка: '
-                   f'0 - {db_list[0]}'
-                   f'1 - {db_list[1]}'
-                   f'2 - {db_list[2]}'
-                   f'3 - {db_list[3]}'
-                   f'4 - {db_list[4]}'
-                   f'5 - {db_list[5]}'
-                   f'6 - {db_list[6]}'
-                   f'7 - {db_list[7]}'
-                   f'8 - {db_list[8]}'
-                   f'9 - {db_list[9]}'
-                   ))
-
-DB = DBManager(db_list[user_input])
-
-
-# epam = DBManager('epam')
-# Tinkoff = DBManager('Tinkoff')
-# Sber = DBManager('Sber')
-# Whoosh = DBManager('Whoosh')
-# SkyPro = DBManager('SkyPro')
-# RuTube = DBManager('RuTube')
-# Cian = DBManager('Циан')
-# RosNeft = DBManager('Роснефть')
-# Gazprom = DBManager('Газпром')
-# SeverStal = DBManager('Северсталь')
+    db_setup = DatabaseSetUp('hh_parser', params)
+    db_setup.create_database()
+    db_setup.create_table()
+    db_setup.employers_to_db(employers_dict)
+    db_setup.vacancies_to_db(vacancies)
 
 
 def main():
-    params = config()
-    conn = None
-    DB = DBManager(db_list[user_input])
+    params.update({'dbname': 'hh_parser'})
+
+    start_user_interaction(employers_dict)
+    user_interaction(params)
 
 
-    DB.create_database()
-    print(f"БД {DB.name} успешно создана")
-
-    params.update({'dbname': DB.name})
-    try:
-        with psycopg2.connect(**params) as conn:
-            with conn.cursor() as cur:
-                execute_sql_script(cur, script_file)
-                print(f"БД {db_name} найдена")
-
-                create_suppliers_table(cur)
-                print(f"Таблица {DB.name} успешно создана")
-
-    except(Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if conn is not None:
-        conn.close()
+if __name__ == "__main__":
+    sql_setup()
+    main()
