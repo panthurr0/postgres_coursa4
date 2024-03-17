@@ -1,5 +1,5 @@
 import psycopg2
-from src.DBManager import DBManager
+from src.db_manager import DBManager
 
 
 def start_user_interaction(data):

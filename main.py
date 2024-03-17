@@ -1,6 +1,6 @@
-from src.hhapi import HeadHunterAPI
+from src.hh_api import HeadHunterAPI
 from src.sql_config import config
-from src.DB_setup import DatabaseSetUp
+from src.db_setup import DatabaseSetUp
 from src.utils import start_user_interaction, user_interaction
 
 employers_dict = {'Яндекс': '1740',

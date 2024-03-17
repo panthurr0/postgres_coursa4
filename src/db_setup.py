@@ -8,6 +8,9 @@ class DatabaseSetUp:
         self.params = params
 
     def create_database(self):
+        """
+        Создаёт базы данных SQL.
+        """
         conn = psycopg2.connect(dbname='postgres', **self.params)
         conn.autocommit = True
         cur = conn.cursor()
@@ -19,6 +22,9 @@ class DatabaseSetUp:
         conn.close()
 
     def create_table(self):
+        """
+        Создаёт таблицы companies и vacancies в базе данных.
+        """
         conn = psycopg2.connect(dbname=self.name, **self.params)
         with conn.cursor() as cur:
             cur.execute("""
@@ -44,7 +50,9 @@ class DatabaseSetUp:
         conn.close()
 
     def employers_to_db(self, emp_dict):
-        """Сохранение работодателей в БД"""
+        """
+        Сохраняет работодателей в БД
+        """
         with psycopg2.connect(dbname=self.name, **self.params) as conn:
             with conn.cursor() as cur:
                 for employer in emp_dict:
@@ -55,7 +63,9 @@ class DatabaseSetUp:
         conn.close()
 
     def vacancies_to_db(self, vacancies):
-        """Сохранение вакансий в БД"""
+        """
+        Сохраняет вакансии в БД
+        """
         with psycopg2.connect(dbname=self.name, **self.params) as conn:
             with conn.cursor() as cur:
                 for vacancy in vacancies:
